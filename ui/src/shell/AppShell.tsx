@@ -24,22 +24,22 @@ export function AppShell() {
           }}
         >
           <div className="border-b p-4" style={{ borderColor: 'var(--app-border)' }}>
-            {showLogo && (
-              <div className="mb-2 flex max-h-12 items-center">
+            <div className="flex min-h-[2.75rem] items-center gap-3">
+              {showLogo && (
                 <img
                   src={config.logoUrl}
                   alt=""
-                  className="max-h-10 w-auto object-contain"
+                  className="h-8 max-h-10 w-auto max-w-[5.5rem] flex-shrink-0 object-contain object-left sm:h-10 sm:max-w-[6.5rem]"
                   onError={() => setLogoErr(true)}
                 />
-              </div>
-            )}
-            <h1
-              className="text-lg font-bold tracking-tight"
-              style={{ color: 'var(--app-menu-title)' }}
-            >
-              {config.brandName}
-            </h1>
+              )}
+              <h1
+                className="min-w-0 flex-1 text-balance text-lg font-bold leading-snug tracking-tight"
+                style={{ color: 'var(--app-menu-title)' }}
+              >
+                {config.brandName}
+              </h1>
+            </div>
           </div>
           <nav className="flex-1 space-y-0.5 p-2" style={{ color: 'var(--app-text)' }}>
             {MAIN_NAV.map((it, i) => (
