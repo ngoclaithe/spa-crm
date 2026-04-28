@@ -10,7 +10,7 @@ export function App() {
       <AppearanceProvider>
         <BrowserRouter>
           <AppRouter />
-          <Toaster position="top-right" richColors closeButton duration={4000} />
+          <Toaster position="top-right" richColors closeButton duration={3000} />
         </BrowserRouter>
       </AppearanceProvider>
     </AppQueryClientProvider>

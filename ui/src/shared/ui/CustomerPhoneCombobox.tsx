@@ -79,7 +79,7 @@ export function CustomerPhoneCombobox({
     if (blurT.current) {
       clearTimeout(blurT.current);
     }
-    if (canSearch && (list.length > 0 || q.isFetching)) {
+    if (canSearch && (q.isFetching || list.length > 0)) {
       setOpen(true);
     }
   };
@@ -88,7 +88,8 @@ export function CustomerPhoneCombobox({
     blurT.current = setTimeout(() => setOpen(false), 180);
   };
 
-  const show = open && canSearch;
+  const hasPanel = canSearch && (q.isFetching || list.length > 0);
+  const show = open && hasPanel;
 
   return (
     <div ref={wrapRef} className={cn('relative', className)}>
@@ -99,8 +100,11 @@ export function CustomerPhoneCombobox({
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          if (e.target.value.trim().length >= 2) {
+          const t = e.target.value.trim();
+          if (t.length >= 2) {
             setOpen(true);
+          } else {
+            setOpen(false);
           }
         }}
         onFocus={onFocus}
@@ -127,7 +131,7 @@ export function CustomerPhoneCombobox({
         autoComplete="off"
         disabled={disabled}
         role="combobox"
-        aria-expanded={show}
+        aria-expanded={hasPanel && open}
         aria-controls={show ? listboxId : undefined}
         aria-autocomplete="list"
       />
@@ -155,9 +159,6 @@ export function CustomerPhoneCombobox({
                 <span className="ml-2 text-slate-600">{c.name}</span>
               </li>
             ))}
-          {!q.isFetching && list.length === 0 && (
-            <li className="px-3 py-2 text-slate-500">Không tìm thấy — có thể nhập khách mới.</li>
-          )}
         </ul>
       )}
     </div>

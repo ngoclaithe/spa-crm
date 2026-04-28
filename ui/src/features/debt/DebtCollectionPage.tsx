@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { searchCustomerByPhone } from '@/shared/api/modules/customers';
 import { createDebtPayment } from '@/shared/api/modules/debt-payments';
 import { key } from '@/shared/api/query-keys';
@@ -27,7 +28,7 @@ export function DebtCollectionPage() {
 
   const m = useMutation({
     mutationFn: createDebtPayment,
-    onSuccess: () => {
+    onSuccess: (data) => {
       setAmount('');
       setNote('');
       setPhone('');
@@ -35,6 +36,7 @@ export function DebtCollectionPage() {
       setActiveCustomer(null);
       setPerformedAt(toDateInputString());
       void qc.invalidateQueries({ queryKey: key.all });
+      toast.success(`Đã lưu phiếu thu nợ. Còn nợ: ${formatVnd(data.newTotalDebt)} đ`);
     },
   });
 
@@ -90,15 +92,6 @@ export function DebtCollectionPage() {
               {error}
             </p>
           )}
-          {m.isSuccess && m.data && !m.isPending && (
-            <p
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
-              role="status"
-            >
-              Đã lưu phiếu thu nợ. Còn nợ sau lần này: {formatVnd(m.data.newTotalDebt)} đ
-            </p>
-          )}
-
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:items-end">
             <div>
               <label className="label" htmlFor="pad">
