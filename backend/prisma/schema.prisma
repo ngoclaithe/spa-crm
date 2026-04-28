@@ -1,0 +1,184 @@
+// miniCRM spa — Prisma 6 + PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums
+
+enum OrderType {
+  POS
+  /// Thu tiền công nợ (có thể tách module sau)
+  DEBT_COLLECTION
+}
+
+enum OrderStatus {
+  DRAFT
+  COMPLETED
+  CANCELLED
+}
+
+enum DiscountType {
+  VND
+  PERCENT
+}
+
+/// Nhật ký: bán hàng, thu nợ, điều chỉnh
+enum CrmTransactionType {
+  POS_SALE
+  DEBT_COLLECTION
+  ADJUSTMENT
+}
+
+// --- Core
+
+model Customer {
+  id        String   @id @default(cuid())
+  /// Chuẩn hóa: chỉ số, không dấu
+  phone     String   @unique
+  name      String
+  /// Tổng công nợ hiện tại (VND, số nguyên)
+  totalDebt Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders          Order[]
+  debtPayments    DebtPayment[]
+  crmTransactions CrmTransaction[]
+}
+
+model SalesChannel {
+  id        String  @id @default(cuid())
+  name      String
+  sortOrder Int     @default(0)
+  active    Boolean @default(true)
+  orders    Order[]
+}
+
+/// Loại dịch vụ (vd: "Nặn mụn")
+model ServiceCategory {
+  id        String    @id @default(cuid())
+  name      String
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  services  Service[]
+}
+
+/// Chi tiết dịch vụ thuộc 1 loại
+model Service {
+  id           String          @id @default(cuid())
+  categoryId   String
+  category     ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name         String
+  /// Giá mặc định 1 buổi (VND)
+  defaultPrice Int             @default(0)
+  active       Boolean         @default(true)
+  orderItems   OrderItem[]
+
+  @@index([categoryId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  /// Mã hóa đơn hiển thị, vd POS-20260428-0001
+  orderCode String      @unique
+  orderDate DateTime    @default(now()) @db.Date
+  type      OrderType   @default(POS)
+  status    OrderStatus @default(COMPLETED)
+
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  salesChannelId String?
+  salesChannel   SalesChannel? @relation(fields: [salesChannelId], references: [id], onDelete: SetNull)
+
+  /// Tổng tiền hàng (trước giảm)
+  subtotal       Int
+  /// Giá trị giảm: VND trực tiếp, hoặc nếu PERCENT thì là số % (0–100)
+  discountValue  Int          @default(0)
+  discountType   DiscountType @default(VND)
+  /// CẦN THU sau giảm
+  amountDue      Int
+  /// THỰC THU
+  amountReceived Int          @default(0)
+  /// CÒN NỢ theo hóa đơn
+  orderBalance   Int          @default(0)
+  notes          String?
+
+  items   OrderItem[]
+  crmLogs CrmTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, orderDate])
+  @@index([orderDate])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  /// Số buổi liệu trình
+  sessions  Int
+  /// Đơn giá tại thời điểm bán (snapshot)
+  unitPrice Int
+  /// Thành tiền dòng
+  lineTotal Int
+
+  @@index([orderId])
+}
+
+/// Thu công nợ (màn Thu Tiền Nợ)
+model DebtPayment {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  amount     Int
+  note       String?
+  /// Ngày thực hiện thu (form; dùng cho báo cáo theo kỳ)
+  performedAt DateTime @default(now()) @map("performed_at")
+  createdAt   DateTime @default(now())
+
+  crmLog CrmTransaction? @relation("DebtPayLog")
+
+  @@index([customerId, createdAt])
+  @@index([performedAt])
+}
+
+/// Dòng nhật ký giao dịch
+model CrmTransaction {
+  id                String             @id @default(cuid())
+  type              CrmTransactionType
+  amount            Int
+  /// Nợ tồn tại thời điểm ghi (nếu cần lịch sử)
+  customerDebtAfter Int?
+
+  customerId    String?
+  customer      Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  orderId       String?
+  order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  /// Liên kết 1-1 nếu là thu nợ
+  debtPaymentId String?      @unique
+  debtPayment   DebtPayment? @relation("DebtPayLog", fields: [debtPaymentId], references: [id], onDelete: SetNull)
+
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@map("crm_transactions")
+}
+
+/// Cấu hình giao diện / tùy chọn ứng dụng (key–value)
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}

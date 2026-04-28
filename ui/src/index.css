@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --app-web-bg: #1e3a5f;
+    --app-text: #0f172a;
+    --app-menu-bg: #f8fafc;
+    --app-menu-title: #0f172a;
+    --app-form-bg: #ffffffcc;
+    --app-title: #0f172a;
+    --app-button-bg: #0284c7;
+    --app-button-fg: #ffffff;
+    --app-border: #e2e8f0;
+  }
+  body {
+    @apply antialiased;
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+  body.app-themed {
+    background-color: var(--app-web-bg);
+    color: var(--app-text);
+  }
+  input,
+  select,
+  textarea,
+  button {
+    @apply outline-none;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-button-bg) 45%, transparent);
+  }
+  main a[href]:focus-visible {
+    @apply outline-none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-button-bg) 45%, transparent);
+  }
+}
+
+@layer components {
+  @keyframes app-galaxy-drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.38;
+    }
+    50% {
+      transform: translate(1.2%, -1.5%) scale(1.04);
+      opacity: 0.5;
+    }
+  }
+  .app-galaxy-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 90% 60% at 12% 32%, color-mix(in srgb, var(--app-button-bg) 26%, transparent) 0%, transparent 55%),
+      radial-gradient(ellipse 85% 50% at 88% 72%, color-mix(in srgb, var(--app-web-bg) 35%, #fff) 0%, transparent 52%),
+      radial-gradient(ellipse 50% 40% at 50% 20%, color-mix(in srgb, var(--app-button-bg) 12%, transparent) 0%, transparent 45%);
+    animation: app-galaxy-drift 24s ease-in-out infinite;
+  }
+  .app-root-inner {
+    position: relative;
+    z-index: 1;
+  }
+  .app-main-surface {
+    /* Vùng nội dung: nền sáng, trộn nhẹ với màu nền web */
+    background: color-mix(in srgb, #f1f5f9 90%, var(--app-web-bg) 10%);
+  }
+  @supports not (color: color-mix(in srgb, white, black)) {
+    .app-main-surface {
+      background: #f1f5f9;
+    }
+  }
+  .card {
+    @apply rounded-xl border shadow-sm;
+    background: var(--app-form-bg, rgba(255, 255, 255, 0.85));
+    border-color: var(--app-border, rgba(226, 232, 240, 0.8));
+  }
+  .input {
+    @apply w-full rounded-lg px-3 py-2 text-sm transition;
+    color: var(--app-text, #0f172a);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--app-border, #e2e8f0);
+  }
+  .input:hover {
+    @apply border-slate-300;
+  }
+  .input:focus {
+    border-color: var(--app-button-bg, #0284c7);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-button-bg) 22%, transparent);
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium;
+    color: color-mix(in srgb, var(--app-text) 80%, #64748b);
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition;
+  }
+  .btn-primary {
+    @apply btn shadow active:scale-[0.99];
+    background-color: var(--app-button-bg, #0284c7);
+    color: var(--app-button-fg, #fff);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.95);
+  }
+  .btn-ghost {
+    @apply btn;
+    background: var(--app-form-bg, #fff);
+    color: var(--app-text, #0f172a);
+    border: 1px solid var(--app-border, #e2e8f0);
+  }
+  .btn-ghost:hover {
+    @apply bg-slate-50/90;
+  }
+  .btn-danger-ghost {
+    @apply btn border border-rose-200 text-rose-600 hover:bg-rose-50;
+  }
+  .section-title {
+    @apply text-sm font-semibold;
+    color: var(--app-title, #0369a1);
+  }
+  a.nav-pill[aria-current='page'] {
+    background: color-mix(in srgb, var(--app-button-bg) 12%, var(--app-menu-bg));
+    color: var(--app-button-bg) !important;
+  }
+  @supports not (color: color-mix(in srgb, white, black)) {
+    a.nav-pill[aria-current='page'] {
+      background: #e0f2fe;
+      color: #0284c7 !important;
+    }
+  }
+}

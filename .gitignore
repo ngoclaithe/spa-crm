@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.vscode/*
+!.vscode/extensions.json
+
+# Prisma (generated client; keep schema & migrations)
+backend/node_modules/.prisma/
+**/generated/prisma/
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Vite
+ui/dist-ssr/
+ui/*.local
+
+# Misc
+*.pem
+.cache/
